@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank System</title>
+</head>
+<body>
+    <h1>Welcome to the Bank System</h1>
+</body>
+<script>
+// BankAccount class implementation
+// This class represents a bank account with basic functionalities
+// such as deposit, withdraw, transfer funds, and view transaction history.
+// It uses private fields and methods to encapsulate data and behavior.
+// The public methods provide a controlled interface for interacting with the account.
+// Example usage is provided at the end of the file.
+class BankAccount {
+  //Private properties
+  #accountNumber;
+  #balance;
+  #accountType;
+  #transactionHistory;
+
+  constructor(accountNumber, initialBalance, accountType) {
+    if (initialBalance < 0) {
+      throw new Error("Initial balance cannot be negative");
+    }
+    if (!["savings", "checking"].includes(accountType)) {
+      throw new Error("Account type must be 'savings' or 'checking'");
+    }
+
+    this.#accountNumber = accountNumber;
+    this.#balance = initialBalance;
+    this.#accountType = accountType;
+    this.#transactionHistory = [];
+
+    this.#recordTransaction("Initial Deposit", initialBalance);
+  }
+
+  //deposit method
+  deposit(amount) {
+    if (amount <= 0) {
+      console.error("Deposit amount must be positive");
+      return;
+    }
+    this.#balance += amount;
+    this.#recordTransaction("Deposit", amount);
+    console.log(`Deposited $${amount}. New balance: $${this.#balance}`);
+  }
+
+  //withdraw method
+  withdraw(amount) {
+    if (amount <= 0) {
+      console.error("Withdrawal amount must be positive");
+      return;
+    }
+    if (amount > this.#balance) {
+      console.error("Insufficient funds");
+      return;
+    }
+    this.#balance -= amount;
+    this.#recordTransaction("Withdrawal", amount);
+    console.log(`Withdrew $${amount}. New balance: $${this.#balance}`);
+  }
+
+  //getBalance method
+  getBalance() {
+    return this.#balance;
+  }
+
+  //getTransactionHistory method
+  getTransactionHistory() {
+    return [...this.#transactionHistory]; // return copy
+  }
+
+  // Public getter for account number
+  getAccountNumber() {
+    return this.#accountNumber;
+  }
+
+  //transferFunds method
+  transferFunds(amount, targetAccount) {
+    if (!(targetAccount instanceof BankAccount)) {
+      console.error("Target must be a BankAccount");
+      return;
+    }
+    if (amount <= 0) {
+      console.error("Transfer amount must be positive");
+      return;
+    }
+    if (amount > this.#balance) {
+      console.error("Insufficient funds for transfer");
+      return;
+    }
+
+    this.withdraw(amount);
+    targetAccount.deposit(amount);
+      `Transferred $${amount} from ${this.#accountNumber} to ${targetAccount.getAccountNumber()}`
+    this.#recordTransaction("Transfer Sent", amount);
+    targetAccount.recordTransferReceived(amount);
+
+    console.log(
+      `Transferred $${amount} from ${this.#accountNumber} to ${targetAccount.getAccountNumber()}`
+    );
+  }
+
+  //applyInterest method
+  applyInterest(rate) {
+    if (this.#accountType !== "savings") {
+      console.error("Interest can only be applied to savings accounts");
+      return;
+    }
+    if (rate <= 0) {
+      console.error("Interest rate must be positive");
+      return;
+    }
+
+    const interest = this.#balance * (rate / 100);
+    this.#balance += interest;
+    this.#recordTransaction("Interest Applied", interest);
+    console.log(`Interest of $${interest.toFixed(2)} applied.`);
+  }
+
+  //getAccountSummary method
+  getAccountSummary() {
+    return this.#generateAccountSummary();
+  }
+
+  //Public method to record received transfer
+  recordTransferReceived(amount) {
+    this.#recordTransaction("Transfer Received", amount);
+  }
+
+  //Private methods
+  #recordTransaction(type, amount) {
+    this.#transactionHistory.push({
+      type,
+      amount,
+      date: new Date().toISOString(),
+    });
+  }
+
+  #generateAccountSummary() {
+    return `Account ${this.#accountNumber} | Type: ${this.#accountType} | Balance: $${this.#balance}`;
+  }
+}
+
+//Example
+const acc1 = new BankAccount("12618", 500, "savings");
+const acc2 = new BankAccount("70068", 300, "checking");
+
+acc1.deposit(200);              
+acc1.withdraw(100);             
+console.log(acc1.getBalance()); 
+console.log(acc1.getTransactionHistory()); 
+acc1.transferFunds(150, acc2);  
+acc1.applyInterest(5);          
+console.log(acc1.getAccountSummary()); 
+
+
+</script>
+</html>
